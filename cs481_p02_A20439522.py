@@ -15,8 +15,9 @@ nltk.download('stopwords')
 
 stop_words = set(stopwords.words('english'))
 training = training_data('DisneylandReviews.csv')
+vocab = {}
 
-def stopwords(sentence):
+def stopword(sentence):
     filtered_sentence = [w for w in sentence.split() if not w.lower() in stop_words]
     return ' '.join(filtered_sentence)
 
@@ -27,17 +28,29 @@ def stemmer(sentence):
 def lowercasing(sentence):
     return sentence.lower()
 
+def vocabulary(sentence):
+    for w in sentence.split():
+        if w in vocab.keys():
+            vocab.update({w: vocab[w] + 1})
+        else:
+            vocab[w] = 1
+    return vocab
+
 def preprocessingNoSkip(data):
     for sentence in data.values():
-        stopwords(stemmer(lowercasing(sentence)))
+        vocabulary(stopword(stemmer(lowercasing(sentence[1]))))
     return
 
 def preprocessingSkip(data):
     for sentence in data.values():
-        stopwords(lowercasing(sentence))
+        newSentence = stopword(lowercasing(sentence[1]))
+        vocabulary(newSentence)
+        
     return
 
 if (sys.argv[1].upper() == "YES"):
     preprocessingSkip(training)
 elif (sys.argv[1].upper() == "NO"):
     preprocessingNoSkip(training)
+
+print(vocab)
