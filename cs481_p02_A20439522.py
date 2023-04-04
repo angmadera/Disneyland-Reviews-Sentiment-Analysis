@@ -1,56 +1,75 @@
-from dictionary import training_data
-import sys
+from dictionary import data
 import nltk 
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 
-n = len(sys.argv)
 ps = PorterStemmer()
 
-if (n != 2):
-    print("Error: Not enough or too many input arguments.", file=sys.stderr)
-    exit()
+x = input("Would you like to skip the stemming preprocessing step? (YES/NO) ")
+print(x)
 
 nltk.download('stopwords')
 
 stop_words = set(stopwords.words('english'))
-training = training_data('DisneylandReviews.csv')
-vocab = {}
+training, test = data('DisneylandReviews.csv')
+frequency = {}
+wordCount = {'1':0, '2':0, '3':0, '4':0, '5':0}
+reviewDict = {'1':0, '2':0, '3':0, '4':0, '5':0}
 
-def stopword(sentence):
-    filtered_sentence = [w for w in sentence.split() if not w.lower() in stop_words]
-    return ' '.join(filtered_sentence)
-
-def stemmer(sentence):
-    filtered_sentence = [ps.stem(w) for w in sentence.split()]
-    return ' '.join(filtered_sentence)
-
-def lowercasing(sentence):
-    return sentence.lower()
-
-def vocabulary(sentence):
-    for w in sentence.split():
-        if w in vocab.keys():
-            vocab.update({w: vocab[w] + 1})
+def vocabulary(arr):
+    rating = arr[0]
+    sentence = arr[1]
+    for w in sentence:
+        if w in frequency.keys():
+            labels = frequency[w]
+            labels[int(rating) - 1] = labels[int(rating) - 1] + 1
+            wordCount.update({rating: wordCount[rating] + 1})
+            labels[5] = labels[5] + 1
+            frequency.update({w: labels})
         else:
-            vocab[w] = 1
-    return vocab
-
-def preprocessingNoSkip(data):
-    for sentence in data.values():
-        vocabulary(stopword(stemmer(lowercasing(sentence[1]))))
+            labels = [1, 1, 1, 1, 1, 5]
+            labels[int(rating) - 1] = labels[int(rating) - 1] + 1
+            labels[5] = labels[5] + 1
+            wordCount.update({rating: wordCount[rating] + 2})
+            frequency.update({w: labels})
     return
+
+def tokenize(sentence):
+    pattern = r"""(?x)                   # set flag to allow verbose regexps
+              (?:[A-Z]\.)+           # abbreviations, e.g. U.S.A.
+              |\d+(?:\.\d+)?%?       # numbers, incl. currency and percentages
+              |\w+(?:[-']\w+)*       # words w/ optional internal hyphens/apostrophe
+              |(?:[+/\-@&*])         # special characters with meanings
+            """
+    tokenizer = nltk.tokenize.regexp.RegexpTokenizer(pattern)
+    tokens = tokenizer.tokenize(sentence)
+    return tokens
+
+def preprocessing(data):
+    reviewCount = 0
+    for review in data.values():
+        reviewCount = reviewCount + 1
+        filtered_review = [ps.stem(w.lower()) for w in set(tokenize(review[1])) if not ps.stem(w.lower()) in stop_words]
+        finalReview = set(filtered_review)
+        reviewDict.update({review[0]: reviewDict[review[0]] + 1})
+        vocabulary([review[0], filtered_review])
+    return reviewCount
 
 def preprocessingSkip(data):
-    for sentence in data.values():
-        newSentence = stopword(lowercasing(sentence[1]))
-        vocabulary(newSentence)
-        
-    return
+    reviewCount = 0
+    for review in data.values():
+        reviewCount = reviewCount + 1
+        filtered_review = [w.lower() for w in tokenize(review[1]) if not w.lower() in stop_words]
+        finalReview = set(filtered_review)
+        vocabulary([review[0], finalReview])
+        reviewDict.update({review[0]: reviewDict[review[0]] + 1})
+    return reviewCount
 
-if (sys.argv[1].upper() == "YES"):
+if (x.upper() == "YES"):
     preprocessingSkip(training)
-elif (sys.argv[1].upper() == "NO"):
-    preprocessingNoSkip(training)
+elif (x.upper() == "NO"):
+    preprocessing(training)
 
-print(vocab)
+# print(frequency['liberate'][5])
+# print(wordCount)
+# print(reviewDict)
