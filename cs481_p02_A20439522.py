@@ -123,7 +123,7 @@ def metricClassification(matrix):
                 label[1] = label[1] + matrix[x][y]
                 label[2] = label[2] + matrix[y][x]
                 classifications.update({str(x + 1): label})
-                print(matrix[y][x])
+                # print(matrix[y][x])
                 countTN += matrix[x][y]
     for x in range(5):
         label = classifications[str(x + 1)]
@@ -131,11 +131,36 @@ def metricClassification(matrix):
         classifications.update({str(x + 1): label})
     return
 
-    
 print("Testing classifier…")
 test(test_data)
 
-print("Test results / metrics:")
-print(confusionMatrix)
+def avg():
+    truePositive = falseNegative = falsePositive = trueNegative = 0
+    for x in range(1, 6):
+        truePositive = truePositive + classifications[str(x)][0]
+        # print(truePositive)
+        falseNegative = falseNegative + classifications[str(x)][1]
+        falsePositive = falsePositive + classifications[str(x)][2]
+        trueNegative = trueNegative + classifications[str(x)][3]
+
+    return truePositive/5, falseNegative/5, falsePositive/5, trueNegative/5
+
+# print(confusionMatrix)
 metricClassification(confusionMatrix)
-print(classifications)
+# print(classifications)
+tp, fn, fp, tn = avg()
+# print(tp, fn, fp, tn)
+
+print("Test results / metrics:")
+print()
+print(f'Number of true positives: {int(tp)}')
+print(f'Number of true negatives:  {int(fn)}')
+print(f'Number of false positives: {int(fp)}')
+print(f'Number of false negatives: {int(fn)}')
+
+# Sensitivity (recall): xxxx
+# Specificity: xxxx
+# Precision: xxxx
+# Negative predictive value: xxxx
+# Accuracy: xxxx
+# F-score: xxxx
