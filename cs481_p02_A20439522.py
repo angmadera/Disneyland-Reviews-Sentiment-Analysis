@@ -83,6 +83,7 @@ def learning(label):
 def learningProbability(word, label):
     #ex. total number of instances of word in review label y / total number of words in label y
     return frequency[word][int(label) - 1]/wordCount[label]
+    #return math.log(frequency[word][int(label) - 1] + 1/wordCount[label] + 1) ???????????
 
 #ex. P(label = 1) * P(x1=word | label =1) * P(x2=word | label =1) *  P(x3=word | label =1) *  P(x4=word | label =1)
 def probability(sentence, label):
