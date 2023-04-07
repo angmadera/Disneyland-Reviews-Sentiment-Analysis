@@ -1,5 +1,6 @@
 from dictionary import data
-import nltk 
+import nltk
+import sys
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import math
@@ -10,15 +11,12 @@ ps = PorterStemmer()
 nltk.download('stopwords')
 
 print()
-x = input("Would you like to skip the stemming preprocessing step? (YES/NO) ")
-
-print()
 print("Madera, Angelica, A20439552 solution:")
 
-if (x.upper() == "NO"):
-    print("Ignored pre-processing step: NONE")
-elif (x.upper() == "YES"):
+if (sys.argv[1].upper() == "YES"):
     print("Ignored pre-processing step: STEMMING")  
+else:
+    print("Ignored pre-processing step: NONE")
 print()
 
 stop_words = set(stopwords.words('english'))
@@ -27,8 +25,7 @@ revCount = 0
 frequency = {}
 wordCount = {'1':0, '2':0, '3':0, '4':0, '5':0}
 reviewDict = {'1':0, '2':0, '3':0, '4':0, '5':0}
-rows, cols = (5, 5)
-confusionMatrix = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
+confusionMatrix = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]] #actual vs guessed
 classifications = {'1': [0, 0, 0, 0], '2': [0, 0, 0, 0], '3': [0, 0, 0, 0], '4': [0, 0, 0, 0], '5': [0, 0, 0, 0]} #tp, fn, fp, tn
 
 def vocabulary(arr):
@@ -61,10 +58,10 @@ def tokenize(sentence):
     return tokens
 
 def preprocessing(review):
-    if (x.upper() == "NO"):
-        filtered_review = [ps.stem(w.lower()) for w in (tokenize(review)) if not ps.stem(w.lower()) in stop_words]
-    elif (x.upper() == "YES"):
+    if (sys.argv[1].upper() == "YES"):
         filtered_review = [w.lower() for w in tokenize(review) if not w.lower() in stop_words]
+    else:
+        filtered_review = [ps.stem(w.lower()) for w in (tokenize(review)) if not ps.stem(w.lower()) in stop_words]
     return filtered_review
 
 def preprocessingTraining(data):
@@ -123,7 +120,6 @@ def metricClassification(matrix):
                 label[1] = label[1] + matrix[x][y]
                 label[2] = label[2] + matrix[y][x]
                 classifications.update({str(x + 1): label})
-                # print(matrix[y][x])
                 countTN += matrix[x][y]
     for x in range(5):
         label = classifications[str(x + 1)]
@@ -135,32 +131,64 @@ print("Testing classifier…")
 test(test_data)
 
 def avg():
-    truePositive = falseNegative = falsePositive = trueNegative = 0
+    truePositive = falseNegative = falsePositive = trueNegative = sensitivity = specificity = precision = negPredVal = accuracy = fscore = 0
     for x in range(1, 6):
-        truePositive = truePositive + classifications[str(x)][0]
-        # print(truePositive)
-        falseNegative = falseNegative + classifications[str(x)][1]
-        falsePositive = falsePositive + classifications[str(x)][2]
-        trueNegative = trueNegative + classifications[str(x)][3]
+        tp, fn, fp, tn = classifications[str(x)][0], classifications[str(x)][1], classifications[str(x)][2], classifications[str(x)][3]
+        truePositive = truePositive + tp
+        falseNegative = falseNegative + fn
+        falsePositive = falsePositive + fp
+        trueNegative = trueNegative + tn
+        recall = (tp/(tp + fn))
+        sensitivity = sensitivity + recall
+        specificity = specificity + (tn/(tn + fp))
+        prec = (tp/(tp + fp))
+        precision = precision + prec
+        negPredVal = negPredVal + (tn/(tn + fn))
+        accuracy = accuracy + ((tp + tn)/(tp + tn + fp + fn))
+        fscore = 2 * ((prec * recall)/(prec + recall))
+    return truePositive/5, falseNegative/5, falsePositive/5, trueNegative/5, sensitivity/5, specificity/5, precision/5, negPredVal/5, accuracy/5, fscore/5
 
-    return truePositive/5, falseNegative/5, falsePositive/5, trueNegative/5
-
-# print(confusionMatrix)
 metricClassification(confusionMatrix)
-# print(classifications)
-tp, fn, fp, tn = avg()
-# print(tp, fn, fp, tn)
+tp, fn, fp, tn, se, sp, pr, npv, ac, fs = avg()
 
 print("Test results / metrics:")
 print()
-print(f'Number of true positives: {int(tp)}')
-print(f'Number of true negatives:  {int(fn)}')
-print(f'Number of false positives: {int(fp)}')
-print(f'Number of false negatives: {int(fn)}')
+print(f'Number of true positives: {tp}')
+print(f'Number of true negatives:  {fn}')
+print(f'Number of false positives: {fp}')
+print(f'Number of false negatives: {tn}')
+print(f'Sensitivity (recall): {se}')
+print(f'Specificity: {sp}')
+print(f'Precision: {pr}')
+print(f'Negative predictive value: {npv}')
+print(f'Accuracy: {ac}')
+print(f'F-score: {fs}')
+print()
 
-# Sensitivity (recall): xxxx
-# Specificity: xxxx
-# Precision: xxxx
-# Negative predictive value: xxxx
-# Accuracy: xxxx
-# F-score: xxxx
+def sentenceClassification(sentence):
+    probArr = []
+    for x in range(1, 6):
+        probArr.append(probability(sentence, str(x)))
+    return probArr
+
+anotherSentence = True
+
+while anotherSentence == True:
+    s = input("Enter your sentence: ")
+    print()
+    print("Sentence S:")
+    print()
+    print(s)
+    print()
+    prob = sentenceClassification(preprocessing(s))
+    maxIdx = prob.index(max(prob))
+    chosenLabel = str(int(maxIdx) + 1)
+    print(f'was classified as Rating {chosenLabel}.')
+    for x in range(1, 6):
+        print(f'P(Rating {str(x)} | S) = {prob[x - 1]}')
+    print()
+    anotherS = input("Do you want to enter another sentence [Y/N]? ")
+    if (anotherS.upper() == "Y"):
+        anotherSentence = True 
+    else:
+        anotherSentence = False
