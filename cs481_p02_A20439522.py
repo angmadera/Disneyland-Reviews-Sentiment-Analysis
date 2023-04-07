@@ -1,4 +1,4 @@
-from A20439522_dictionary import data
+from data_A20439522 import data
 import nltk
 import sys
 from nltk.corpus import stopwords
