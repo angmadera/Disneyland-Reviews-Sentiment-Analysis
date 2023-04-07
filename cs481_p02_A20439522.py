@@ -1,4 +1,4 @@
-from dictionary import data
+from A20439522_dictionary import data
 import nltk
 import sys
 from nltk.corpus import stopwords
@@ -11,7 +11,8 @@ ps = PorterStemmer()
 nltk.download('stopwords')
 
 print()
-print("Madera, Angelica, A20439552 solution:")
+print("Madera, Angelica, A20439552,")
+print("Ahmed, Sameeha, A20439552, solution:")
 
 if (sys.argv[1].upper() == "YES"):
     print("Ignored pre-processing step: STEMMING")  
@@ -78,10 +79,10 @@ print("Training classifier…")
 revCount = preprocessingTraining(training_data)
 
 def learning(label):
-    return reviewDict[label]/revCount
+    return math.log(reviewDict[label]/revCount)
 
 def learningProbability(word, label):
-    return frequency[word][int(label) - 1]/wordCount[label]
+    return math.log((frequency[word][int(label) - 1])/(wordCount[label]))
 
 def probability(sentence, label):
     prob = []
@@ -91,7 +92,7 @@ def probability(sentence, label):
             prob.append(learningProbability(word, label))
         else:
             continue
-    finalProb = numpy.prod(prob)
+    finalProb = numpy.sum(prob)
     return finalProb
 
 def test(data):

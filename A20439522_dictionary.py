@@ -13,7 +13,7 @@ def data(csv_file):
         for i in range(0, learning_data):
             review = rows[i]
             training_data[i+1] = [review[1], review[4]]
-        for i in range(learning_data + 1, len(rows)):
+        for i in range(learning_data, len(rows)):
             review = rows[i]
             test_data[i+1] = [review[1], review[4]]
     return training_data, test_data
