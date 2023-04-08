@@ -12,7 +12,7 @@ nltk.download('stopwords')
 
 print()
 print("Madera, Angelica, A20439552,")
-print("Ahmed, Sameeha, A20439552, solution:")
+print("Ahmed, Sameeha, A20439299, solution:")
 
 if (sys.argv[1].upper() == "YES"):
     print("Ignored pre-processing step: STEMMING")  
