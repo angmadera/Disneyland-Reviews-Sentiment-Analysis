@@ -186,7 +186,7 @@ while anotherSentence == True:
     chosenLabel = str(int(maxIdx) + 1)
     print(f'was classified as Rating {chosenLabel}.')
     for x in range(1, 6):
-        print(f'P(Rating {str(x)} | S) = {prob[x - 1]}')
+        print(f'P(Rating {str(x)} | S) = {math.pow(2.71828, prob[x - 1])}')
     print()
     anotherS = input("Do you want to enter another sentence [Y/N]? ")
     if (anotherS.upper() == "Y"):
